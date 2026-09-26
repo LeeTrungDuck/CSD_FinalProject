@@ -10,6 +10,15 @@
 public class InsertTextCommand implements Command{
     private int position;
     private String text;
+    private Editor editor;
+
+    public InsertTextCommand(int position, String text, Editor editor) {
+        this.position = position;
+        this.text = text;
+        this.editor = editor;
+    }
+    
+    
     
     @Override
     public void undo() {
