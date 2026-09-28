@@ -8,14 +8,30 @@
  * @author ltrun
  */
 public class Node {
-    Command data;
-    Node next;
+    private Command data;
+    private Node next;
 
     public Node() {
     }
 
     public Node(Command data, Node next) {
         this.data = data;
+        this.next = next;
+    }
+
+    public Command getData() {
+        return data;
+    }
+
+    public void setData(Command data) {
+        this.data = data;
+    }
+
+    public Node getNext() {
+        return next;
+    }
+
+    public void setNext(Node next) {
         this.next = next;
     }
     
