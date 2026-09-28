@@ -21,13 +21,16 @@ public class InsertTextCommand implements Command{
     
     
     @Override
-    public void undo() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void undo() { // doan nay co nem loi, nho bat loi, dung de hoan tac 1 thao tac them
+            editor.delete(position, position+text.length());
     }
 
     @Override
-    public void execute() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public void execute() { //dung khi them 1 chuoi - co exeption nho bat
+        if(editor == null)
+            throw new IllegalArgumentException("Editor Is Null!");
+        editor.insert(position, text);
+
     }
     
 }

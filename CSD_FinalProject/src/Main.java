@@ -22,15 +22,9 @@ public class Main {
     editor.insert(0, "Hello");
     System.out.println(editor.getContent());
     // Hello
-
-    editor.insert(5, " World");
+    Command newCommand = new InsertTextCommand(10, "1 Word", editor);
+    newCommand.execute();
     System.out.println(editor.getContent());
-    // Hello World
-
-    editor.insert(6, "Beautiful ");
-    System.out.println(editor.getContent());
-    // Hello Beautiful World
-    }
-    Stack<String> s = new Stack<>();
     
+    }
 }
