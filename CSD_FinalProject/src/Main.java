@@ -1,5 +1,6 @@
 
 import java.util.Stack;
+import javax.swing.SwingUtilities;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -16,15 +17,22 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new UI().setVisible(true));
         // TODO code application logic here
           Editor editor = new Editor();
 
-    editor.insert(0, "Hello");
-    System.out.println(editor.getContent());
-    // Hello
-    Command newCommand = new InsertTextCommand(10, "1 Word", editor);
-    newCommand.execute();
-    System.out.println(editor.getContent());
+        editor.insert(0, "Hello");
+        System.out.println(editor.getContent());
+        // Hello
+        Command newCommand = new InsertTextCommand(5, "1 Word", editor);
+        newCommand.execute();
+        System.out.println(editor.getContent());
     
+        Command del = new DeleteTextCommand(5, 11, editor);
+        del.execute();
+        System.out.println(editor.getContent());   // Hello
+
+        del.undo();
+        System.out.println(editor.getContent());   // Hello World
     }
 }
