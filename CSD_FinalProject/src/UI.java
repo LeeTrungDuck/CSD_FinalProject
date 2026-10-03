@@ -2,10 +2,16 @@ import java.util.Scanner;
 
 public class UI {
 
+    private static final String DEFAULT_PATH = "content.txt";
+
     private final Scanner sc = new Scanner(System.in);
     private final Editor editor = new Editor();
     private final UndoHistoryManager undo = new UndoHistoryManager();
     private final RedoHistoryManager redo = new RedoHistoryManager();
+    private final HistoryLimitManager limit = new HistoryLimitManager();
+    private final FileHandle fileHandle = new FileHandle(DEFAULT_PATH);
+    private final SystemEngine engine =
+            new SystemEngine(editor, undo, redo, limit, fileHandle);
 
     // ---------- Chạy chương trình ----------
     public void start() {
@@ -30,28 +36,38 @@ public class UI {
                     c = new ReplaceTextCommand(r2[0], r2[1], inputText("New text: "), editor);
                     break;
                 case 4:
-                    Command u = undo.pop();
-                    if (u == null) { error("Nothing to undo!"); break; }
-                    u.undo();
-                    redo.push(u);
+                    if (undo.isEmpty()) { error("Nothing to undo!"); break; }
+                    try {
+                        engine.undo();
+                    } catch (IllegalArgumentException e) {
+                        error("Error: " + e.getMessage());
+                    }
                     break;
                 case 5:
-                    Command d = redo.pop();
-                    if (d == null) { error("Nothing to redo!"); break; }
-                    d.execute();
-                    undo.push(d);
+                    if (redo.isEmpty()) { error("Nothing to redo!"); break; }
+                    try {
+                        engine.redo();
+                    } catch (IllegalArgumentException e) {
+                        error("Error: " + e.getMessage());
+                    }
                     break;
                 case 6:
+                    saveFile();
+                    break;
+                case 7:
+                    loadFile();
+                    break;
+                case 8:
+                    changeLimit();
+                    break;
+                case 9:
                     info("Bye!");
                     return;
             }
 
-            // TODO: thay bằng systemEngine.executeCommand(c) khi SystemEngine xong
             if (c != null) {
                 try {
-                    c.execute();
-                    undo.push(c);
-                    redo.clear();
+                    engine.executeCommand(c);
                 } catch (IllegalArgumentException e) {
                     error("Error: " + e.getMessage());
                 }
@@ -59,22 +75,66 @@ public class UI {
         }
     }
 
+    // ---------- Save / Load (FileHandle) ----------
+    private void saveFile() {
+        fileHandle.setFilePath(inputPath());
+        try {
+            engine.saveFile();
+            info("Saved to: " + fileHandle.getFilePath());
+        } catch (RuntimeException e) {
+            error("Save failed: " + e.getMessage());
+        }
+    }
+
+    private void loadFile() {
+        fileHandle.setFilePath(inputPath());
+        try {
+            engine.loadFile();
+            info("Loaded from: " + fileHandle.getFilePath()
+                    + " (undo/redo history cleared)");
+        } catch (RuntimeException e) {
+            error("Load failed: " + e.getMessage());
+        }
+    }
+
+    private String inputPath() {
+        System.out.print("File path [" + fileHandle.getFilePath() + "]: ");
+        String s = sc.nextLine().trim();
+        return s.isEmpty() ? fileHandle.getFilePath() : s;
+    }
+
+    // ---------- Giới hạn lịch sử (HistoryLimitManager) ----------
+    private void changeLimit() {
+        info("Current limit: " + limit.getLimit()
+                + " (default " + HistoryLimitManager.MAX_SIZE + ")");
+        int newLimit = inputInt("New limit (1-1000): ", 1, 1000);
+        limit.setLimit(newLimit);
+        // Cắt ngay phần vượt quá giới hạn mới
+        limit.enforceLimit(undo.getUndoStack());
+        limit.enforceLimit(redo.getRedoStack());
+        info("History limit set to " + limit.getLimit());
+    }
+
     // ---------- Menu ----------
     private int menu() {
-    System.out.println();
-    System.out.println("+==================================+");
-    System.out.println("|        TEXT EDITOR - UNDO/REDO   |");
-    System.out.println("+==================================+");
-    System.out.println("|  1. Insert text                  |");
-    System.out.println("|  2. Delete text                  |");
-    System.out.println("|  3. Replace text                 |");
-    System.out.println("|----------------------------------|");
-    System.out.println("|  4. Undo                         |");
-    System.out.println("|  5. Redo                         |");
-    System.out.println("|----------------------------------|");
-    System.out.println("|  6. Exit                         |");
-    System.out.println("+==================================+");
-    return inputInt(">> Your choice: ", 1, 6);
+        System.out.println();
+        System.out.println("+==================================+");
+        System.out.println("|        TEXT EDITOR - UNDO/REDO   |");
+        System.out.println("+==================================+");
+        System.out.println("|  1. Insert text                  |");
+        System.out.println("|  2. Delete text                  |");
+        System.out.println("|  3. Replace text                 |");
+        System.out.println("|----------------------------------|");
+        System.out.println("|  4. Undo                         |");
+        System.out.println("|  5. Redo                         |");
+        System.out.println("|----------------------------------|");
+        System.out.println("|  6. Save file                    |");
+        System.out.println("|  7. Load file                    |");
+        System.out.println("|  8. Set history limit            |");
+        System.out.println("|----------------------------------|");
+        System.out.println("|  9. Exit                         |");
+        System.out.println("+==================================+");
+        return inputInt(">> Your choice: ", 1, 9);
     }
 
     // ---------- Nhập liệu ----------
@@ -113,18 +173,16 @@ public class UI {
 
     // ---------- Hiển thị ----------
     private void show(String content) {
-    System.out.println();
-    System.out.println("+----------------- CONTENT -----------------+");
-    System.out.println("  " + (content.isEmpty() ? "(empty)" : content));
-    System.out.println("+-------------------------------------------+");
-    System.out.println("  Length: " + content.length());
+        System.out.println();
+        System.out.println("+----------------- CONTENT -----------------+");
+        System.out.println("  " + (content.isEmpty() ? "(empty)" : content));
+        System.out.println("+-------------------------------------------+");
+        System.out.println("  Length: " + content.length());
+        System.out.println("  Undo: " + undo.getUndoStack().getSize() + "/" + limit.getLimit()
+                + " | Redo: " + redo.getRedoStack().getSize() + "/" + limit.getLimit());
     }
 
-    private void info(String msg) {
-        System.out.println(msg);
-    }
+    private void info(String msg) { System.out.println(msg); }
 
-    private void error(String msg) {
-        System.err.println(msg);
-    }
+    private void error(String msg) { System.err.println(msg); }
 }
