@@ -1,5 +1,4 @@
 
-import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class UI {
@@ -128,15 +127,11 @@ public class UI {
         info("Current limit: " + limit.getLimit()
                 + " (default " + HistoryLimitManager.MAX_SIZE + ")");
         int newLimit = inputInt("New limit (1-1000): ", 1, 1000);
-        try {
-            limit.setLimit(newLimit);
-            // Cắt ngay phần vượt quá giới hạn mới
-            limit.enforceLimit(undo.getUndoStack());
-            limit.enforceLimit(redo.getRedoStack());
-            info("History limit set to " + limit.getLimit());
-        } catch (RuntimeException e) {
-            error("Could not change limit: " + e.getMessage());
-        }
+        limit.setLimit(newLimit);
+        // Cắt ngay phần vượt quá giới hạn mới
+        limit.enforceLimit(undo.getUndoStack());
+        limit.enforceLimit(redo.getRedoStack());
+        info("History limit set to " + limit.getLimit());
     }
 
     // ---------- Menu ----------

@@ -61,9 +61,9 @@ public class RedoHistoryManager {
      * @param cmd command cần lưu trữ vào lịch sử làm lại
      * @throws IllegalArgumentException nếu cmd là null
      */
-    public void push(Command cmd) {
+    public void push(Command cmd) throws UndoRedoException {
         if (cmd == null) {
-            throw new IllegalArgumentException("Command cannot be null");
+            throw new UndoRedoException("Command cannot be null");
         }
         if (redoStack == null) {
             redoStack = new CustomStack();

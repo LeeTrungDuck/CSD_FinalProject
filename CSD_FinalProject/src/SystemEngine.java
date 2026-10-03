@@ -1,3 +1,4 @@
+
 /**
  * Lớp SystemEngine là bộ điều phối trung tâm của Undo/Redo Engine,
  * kết nối Editor, UndoHistoryManager, RedoHistoryManager,
@@ -17,8 +18,8 @@ public class SystemEngine {
     private FileHandle fileHandle;
 
     public SystemEngine(Editor editor, UndoHistoryManager undoManager,
-                         RedoHistoryManager redoManager, HistoryLimitManager limitManager,
-                         FileHandle fileHandle) {
+            RedoHistoryManager redoManager, HistoryLimitManager limitManager,
+            FileHandle fileHandle) {
         this.editor = editor;
         this.undoManager = undoManager;
         this.redoManager = redoManager;
@@ -27,24 +28,47 @@ public class SystemEngine {
     }
 
     // ---------- Getter / Setter ----------
-    public Editor getEditor() { return editor; }
-    public void setEditor(Editor editor) { this.editor = editor; }
+    public Editor getEditor() {
+        return editor;
+    }
 
-    public UndoHistoryManager getUndoManager() { return undoManager; }
-    public void setUndoManager(UndoHistoryManager undoManager) { this.undoManager = undoManager; }
+    public void setEditor(Editor editor) {
+        this.editor = editor;
+    }
 
-    public RedoHistoryManager getRedoManager() { return redoManager; }
-    public void setRedoManager(RedoHistoryManager redoManager) { this.redoManager = redoManager; }
+    public UndoHistoryManager getUndoManager() {
+        return undoManager;
+    }
 
-    public HistoryLimitManager getLimitManager() { return limitManager; }
-    public void setLimitManager(HistoryLimitManager limitManager) { this.limitManager = limitManager; }
+    public void setUndoManager(UndoHistoryManager undoManager) {
+        this.undoManager = undoManager;
+    }
 
-    public FileHandle getFileHandle() { return fileHandle; }
-    public void setFileHandle(FileHandle fileHandle) { this.fileHandle = fileHandle; }
+    public RedoHistoryManager getRedoManager() {
+        return redoManager;
+    }
+
+    public void setRedoManager(RedoHistoryManager redoManager) {
+        this.redoManager = redoManager;
+    }
+
+    public HistoryLimitManager getLimitManager() {
+        return limitManager;
+    }
+
+    public void setLimitManager(HistoryLimitManager limitManager) {
+        this.limitManager = limitManager;
+    }
+
+    public FileHandle getFileHandle() {
+        return fileHandle;
+    }
+
+    public void setFileHandle(FileHandle fileHandle) {
+        this.fileHandle = fileHandle;
+    }
 
     // ---------- Core Operations ----------
-
- 
     public void executeCommand(Command command) throws UndoRedoException {
         if (command == null) {
             return;
@@ -56,33 +80,42 @@ public class SystemEngine {
     }
 
     /**
-     * Hoàn tác hành động gần nhất: pop khỏi Undo History, gọi undo(),
-     * rồi chuyển Command sang Redo History.
+     * Hoàn tác hành động gần nhất: pop khỏi Undo History, gọi undo(), rồi
+     * chuyển Command sang Redo History.Reverses the last action and moves it to
+     * the redo history.
      *
-     * Reverses the last action and moves it to the redo history.
+     * @throws UndoRedoException
      */
     public void undo() throws UndoRedoException {
-        Command command = undoManager.pop();
-        if (command != null) {
-            command.undo();
-            redoManager.push(command);
-            limitManager.enforceLimit(redoManager.getRedoStack());
+        Node node = undoManager.getUndoStack().peek();
+        if (node == null) {
+            return;
         }
+        Command command = node.getData();
+        command.undo();              // lỗi thì lệnh vẫn còn trong undo stack
+        undoManager.pop();
+        redoManager.push(command);
+        limitManager.enforceLimit(redoManager.getRedoStack());
     }
 
     /**
-     * Làm lại hành động vừa hoàn tác: pop khỏi Redo History, gọi execute(),
-     * rồi chuyển Command trở lại Undo History.
+     * Làm lại hành động vừa hoàn tác: pop khỏi Redo History, gọi execute(), rồi
+     * chuyển Command trở lại Undo History.Re-applies the last undone action and moves it back to undo history.
      *
-     * Re-applies the last undone action and moves it back to undo history.
+     * @throws UndoRedoException
      */
     public void redo() throws UndoRedoException {
-        Command command = redoManager.pop();
-        if (command != null) {
-            command.execute();
-            undoManager.push(command);
-            limitManager.enforceLimit(undoManager.getUndoStack());
+        Node node = redoManager.getRedoStack().peek();
+        if (node == null) {
+            return;                      
         }
+        Command command = node.getData();
+
+        command.execute();              
+
+        redoManager.pop();              
+        undoManager.push(command); 
+        limitManager.enforceLimit(undoManager.getUndoStack());
     }
 
     /**
@@ -92,12 +125,11 @@ public class SystemEngine {
      */
     public void saveFile() throws UndoRedoException {
         if (fileHandle == null) {
-            throw new IllegalStateException("FileHandle is not set!");
+            throw new UndoRedoException("FileHandle is not set!");
         }
         fileHandle.writeFile(editor.getContent());
     }
 
-   
     public void loadFile() throws UndoRedoException {
         if (fileHandle == null) {
             throw new UndoRedoException("FileHandle is not set!");
