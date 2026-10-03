@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="CSD_FinalProject">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/CSD_FinalProject.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

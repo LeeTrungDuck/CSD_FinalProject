@@ -21,74 +21,71 @@ public class UI {
             show(editor.getContent());
             int len = editor.getContent().length();
             Command c = null;
-            try {
-                switch (menu()) {
-                    case 1:
-                        int pos = inputPosition(len);
-                        c = new InsertTextCommand(pos, inputText("Text: "), editor);
+            switch (menu()) {
+                case 1:
+                    int pos = inputPosition(len);
+                    c = new InsertTextCommand(pos, inputText("Text: "), editor);
+                    break;
+                case 2:
+                    if (len == 0) {
+                        error("Content is empty!");
                         break;
-                    case 2:
-                        if (len == 0) {
-                            error("Content is empty!");
-                            break;
-                        }
-                        int[] r = inputRange(len);
-                        c = new DeleteTextCommand(r[0], r[1], editor);
+                    }
+                    int[] r = inputRange(len);
+                    c = new DeleteTextCommand(r[0], r[1], editor);
+                    break;
+                case 3:
+                    if (len == 0) {
+                        error("Content is empty!");
                         break;
-                    case 3:
-                        if (len == 0) {
-                            error("Content is empty!");
-                            break;
-                        }
-                        int[] r2 = inputRange(len);
-                        c = new ReplaceTextCommand(r2[0], r2[1], inputText("New text: "), editor);
+                    }
+                    int[] r2 = inputRange(len);
+                    c = new ReplaceTextCommand(r2[0], r2[1], inputText("New text: "), editor);
+                    break;
+                case 4:
+                    if (undo.isEmpty()) {
+                        error("Nothing to undo!");
                         break;
-                    case 4:
-                        if (undo.isEmpty()) {
-                            error("Nothing to undo!");
-                            break;
-                        }
-                        try {
-                            engine.undo();
-                        } catch (UndoRedoException e) {
-                            error("Error: " + e.getMessage());
-                        }
-                        break;
-                    case 5:
-                        if (redo.isEmpty()) {
-                            error("Nothing to redo!");
-                            break;
-                        }
-                        try {
-                            engine.redo();
-                        } catch (UndoRedoException e) {
-                            error("Error: " + e.getMessage());
-                        }
-                        break;
-                    case 6:
-                        saveFile();
-                        break;
-                    case 7:
-                        loadFile();
-                        break;
-                    case 8:
-                        changeLimit();
-                        break;
-                    case 9:
-                        info("Bye!");
-                        return;
-                }
-
-                if (c != null) {
+                    }
                     try {
-                        engine.executeCommand(c);
+                        engine.undo();
                     } catch (UndoRedoException e) {
                         error("Error: " + e.getMessage());
                     }
+                    break;
+                case 5:
+                    if (redo.isEmpty()) {
+                        error("Nothing to redo!");
+                        break;
+                    }
+                    try {
+                        engine.redo();
+                    } catch (UndoRedoException e) {
+                        error("Error: " + e.getMessage());
+                    }
+                    break;
+                case 6:
+                    saveFile();
+                    break;
+                case 7:
+                    loadFile();
+                    break;
+                case 8:
+                    changeLimit();
+                    break;
+                case 9:
+                    if (confirm("Are you sure to exit?")) {
+                        info("Bye!");
+                        return;
+                    }
+                    break;
+            }
+            if (c != null) {
+                try {
+                    engine.executeCommand(c);
+                } catch (UndoRedoException e) {
+                    error("Error: " + e.getMessage());
                 }
-            } catch (NoSuchElementException e) {
-                System.out.println();
-                info("Input closed. Bye!");
             }
         }
     }
@@ -114,7 +111,9 @@ public class UI {
             info("Loaded from: " + fileHandle.getFilePath()
                     + " (undo/redo history cleared)");
         } catch (UndoRedoException e) {
+            fileHandle.setFilePath(oldPath);
             error("Load failed: " + e.getMessage());
+
         }
     }
 
