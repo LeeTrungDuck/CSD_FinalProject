@@ -1,3 +1,5 @@
+
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class UI {
@@ -10,8 +12,8 @@ public class UI {
     private final RedoHistoryManager redo = new RedoHistoryManager();
     private final HistoryLimitManager limit = new HistoryLimitManager();
     private final FileHandle fileHandle = new FileHandle(DEFAULT_PATH);
-    private final SystemEngine engine =
-            new SystemEngine(editor, undo, redo, limit, fileHandle);
+    private final SystemEngine engine
+            = new SystemEngine(editor, undo, redo, limit, fileHandle);
 
     // ---------- Chạy chương trình ----------
     public void start() {
@@ -19,74 +21,93 @@ public class UI {
             show(editor.getContent());
             int len = editor.getContent().length();
             Command c = null;
-
-            switch (menu()) {
-                case 1:
-                    int pos = inputPosition(len);
-                    c = new InsertTextCommand(pos, inputText("Text: "), editor);
-                    break;
-                case 2:
-                    if (len == 0) { error("Content is empty!"); break; }
-                    int[] r = inputRange(len);
-                    c = new DeleteTextCommand(r[0], r[1], editor);
-                    break;
-                case 3:
-                    if (len == 0) { error("Content is empty!"); break; }
-                    int[] r2 = inputRange(len);
-                    c = new ReplaceTextCommand(r2[0], r2[1], inputText("New text: "), editor);
-                    break;
-                case 4:
-                    if (undo.isEmpty()) { error("Nothing to undo!"); break; }
-                    try {
-                        engine.undo();
-                    } catch (UndoRedoException e) {
-                        error("Error: " + e.getMessage());
-                    }
-                    break;
-                case 5:
-                    if (redo.isEmpty()) { error("Nothing to redo!"); break; }
-                    try {
-                        engine.redo();
-                    } catch (UndoRedoException e) {
-                        error("Error: " + e.getMessage());
-                    }
-                    break;
-                case 6:
-                    saveFile();
-                    break;
-                case 7:
-                    loadFile();
-                    break;
-                case 8:
-                    changeLimit();
-                    break;
-                case 9:
-                    info("Bye!");
-                    return;
-            }
-
-            if (c != null) {
-                try {
-                    engine.executeCommand(c);
-                } catch (UndoRedoException e) {
-                    error("Error: " + e.getMessage());
+            try {
+                switch (menu()) {
+                    case 1:
+                        int pos = inputPosition(len);
+                        c = new InsertTextCommand(pos, inputText("Text: "), editor);
+                        break;
+                    case 2:
+                        if (len == 0) {
+                            error("Content is empty!");
+                            break;
+                        }
+                        int[] r = inputRange(len);
+                        c = new DeleteTextCommand(r[0], r[1], editor);
+                        break;
+                    case 3:
+                        if (len == 0) {
+                            error("Content is empty!");
+                            break;
+                        }
+                        int[] r2 = inputRange(len);
+                        c = new ReplaceTextCommand(r2[0], r2[1], inputText("New text: "), editor);
+                        break;
+                    case 4:
+                        if (undo.isEmpty()) {
+                            error("Nothing to undo!");
+                            break;
+                        }
+                        try {
+                            engine.undo();
+                        } catch (UndoRedoException e) {
+                            error("Error: " + e.getMessage());
+                        }
+                        break;
+                    case 5:
+                        if (redo.isEmpty()) {
+                            error("Nothing to redo!");
+                            break;
+                        }
+                        try {
+                            engine.redo();
+                        } catch (UndoRedoException e) {
+                            error("Error: " + e.getMessage());
+                        }
+                        break;
+                    case 6:
+                        saveFile();
+                        break;
+                    case 7:
+                        loadFile();
+                        break;
+                    case 8:
+                        changeLimit();
+                        break;
+                    case 9:
+                        info("Bye!");
+                        return;
                 }
+
+                if (c != null) {
+                    try {
+                        engine.executeCommand(c);
+                    } catch (UndoRedoException e) {
+                        error("Error: " + e.getMessage());
+                    }
+                }
+            } catch (NoSuchElementException e) {
+                System.out.println();
+                info("Input closed. Bye!");
             }
         }
     }
-
     // ---------- Save / Load (FileHandle) ----------
+
     private void saveFile() {
+        String oldPath = fileHandle.getFilePath();
         fileHandle.setFilePath(inputPath());
         try {
             engine.saveFile();
             info("Saved to: " + fileHandle.getFilePath());
         } catch (UndoRedoException e) {
+            fileHandle.setFilePath(oldPath); // khôi phục đường dẫn cũ
             error("Save failed: " + e.getMessage());
         }
     }
 
     private void loadFile() {
+        String oldPath = fileHandle.getFilePath();
         fileHandle.setFilePath(inputPath());
         try {
             engine.loadFile();
@@ -108,11 +129,15 @@ public class UI {
         info("Current limit: " + limit.getLimit()
                 + " (default " + HistoryLimitManager.MAX_SIZE + ")");
         int newLimit = inputInt("New limit (1-1000): ", 1, 1000);
-        limit.setLimit(newLimit);
-        // Cắt ngay phần vượt quá giới hạn mới
-        limit.enforceLimit(undo.getUndoStack());
-        limit.enforceLimit(redo.getRedoStack());
-        info("History limit set to " + limit.getLimit());
+        try {
+            limit.setLimit(newLimit);
+            // Cắt ngay phần vượt quá giới hạn mới
+            limit.enforceLimit(undo.getUndoStack());
+            limit.enforceLimit(redo.getRedoStack());
+            info("History limit set to " + limit.getLimit());
+        } catch (RuntimeException e) {
+            error("Could not change limit: " + e.getMessage());
+        }
     }
 
     // ---------- Menu ----------
@@ -139,7 +164,9 @@ public class UI {
 
     // ---------- Nhập liệu ----------
     private int inputPosition(int len) {
-        if (len == 0) return 0;
+        if (len == 0) {
+            return 0;
+        }
         return inputInt("Position (0-" + len + "): ", 0, len);
     }
 
@@ -153,7 +180,9 @@ public class UI {
         while (true) {
             System.out.print(msg);
             String s = sc.nextLine();
-            if (!s.isEmpty()) return s;
+            if (!s.isEmpty()) {
+                return s;
+            }
             System.err.println("Input must not be empty");
         }
     }
@@ -163,7 +192,9 @@ public class UI {
             System.out.print(msg);
             try {
                 int n = Integer.parseInt(sc.nextLine().trim());
-                if (n >= min && n <= max) return n;
+                if (n >= min && n <= max) {
+                    return n;
+                }
                 System.err.println("Please input number in range [" + min + ", " + max + "]");
             } catch (NumberFormatException e) {
                 System.err.println("Please input a valid integer");
@@ -182,7 +213,26 @@ public class UI {
                 + " | Redo: " + redo.getRedoStack().getSize() + "/" + limit.getLimit());
     }
 
-    private void info(String msg) { System.out.println(msg); }
+    // YES / NO
+    private boolean confirm(String msg) {
+        while (true) {
+            System.out.print(msg + " (y/n): ");
+            String s = sc.nextLine().trim().toLowerCase();
+            if (s.equals("y") || s.equals("yes")) {
+                return true;
+            }
+            if (s.equals("n") || s.equals("no")) {
+                return false;
+            }
+            System.err.println("Please enter y or n");
+        }
+    }
 
-    private void error(String msg) { System.err.println(msg); }
+    private void info(String msg) {
+        System.out.println(msg);
+    }
+
+    private void error(String msg) {
+        System.err.println(msg);
+    }
 }

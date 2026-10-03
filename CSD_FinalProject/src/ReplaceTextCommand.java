@@ -49,8 +49,6 @@ public class ReplaceTextCommand implements Command{
         if (editor == null || oldText == null || newText == null) {
             throw new UndoRedoException("Editor or text is null!");
         }
-        if (oldText != null) {
-            editor.replace(position, position + newText.length(), oldText);
-        }
+        editor.replace(position, position + newText.length(), oldText);
     }
 }
