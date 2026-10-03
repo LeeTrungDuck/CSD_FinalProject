@@ -45,7 +45,7 @@ public class SystemEngine {
     // ---------- Core Operations ----------
 
  
-    public void executeCommand(Command command) {
+    public void executeCommand(Command command) throws UndoRedoException {
         if (command == null) {
             return;
         }
@@ -61,7 +61,7 @@ public class SystemEngine {
      *
      * Reverses the last action and moves it to the redo history.
      */
-    public void undo() {
+    public void undo() throws UndoRedoException {
         Command command = undoManager.pop();
         if (command != null) {
             command.undo();
@@ -76,7 +76,7 @@ public class SystemEngine {
      *
      * Re-applies the last undone action and moves it back to undo history.
      */
-    public void redo() {
+    public void redo() throws UndoRedoException {
         Command command = redoManager.pop();
         if (command != null) {
             command.execute();
@@ -90,7 +90,7 @@ public class SystemEngine {
      *
      * Saves the current editor content to disk via FileHandle.
      */
-    public void saveFile() {
+    public void saveFile() throws UndoRedoException {
         if (fileHandle == null) {
             throw new IllegalStateException("FileHandle is not set!");
         }
@@ -98,9 +98,9 @@ public class SystemEngine {
     }
 
    
-    public void loadFile() {
+    public void loadFile() throws UndoRedoException {
         if (fileHandle == null) {
-            throw new IllegalStateException("FileHandle is not set!");
+            throw new UndoRedoException("FileHandle is not set!");
         }
         String content = fileHandle.readFile();
 

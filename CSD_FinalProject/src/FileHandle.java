@@ -20,10 +20,10 @@ public class FileHandle {
     }
 
    
-    public String readFile() {
+    public String readFile() throws UndoRedoException {
         File file = new File(filePath);
         if (!file.exists()) {
-            throw new IllegalArgumentException("File not found: " + filePath);
+            throw new UndoRedoException("File not found: " + filePath);
         }
 
         char[] buffer = new char[(int) file.length()];
@@ -38,16 +38,16 @@ public class FileHandle {
             }
             return new String(buffer, 0, totalRead);
         } catch (IOException e) {
-            throw new RuntimeException("Could not read file: " + filePath, e);
+            throw new UndoRedoException("Could not read file: " + filePath);
         }
     }
 
    
-    public void writeFile(String content) {
+    public void writeFile(String content) throws UndoRedoException {
         try (FileWriter writer = new FileWriter(filePath)) {
             writer.write(content == null ? "" : content);
         } catch (IOException e) {
-            throw new RuntimeException("Could not write file: " + filePath, e);
+            throw new UndoRedoException("Could not write file: " + filePath);
         }
     }
 }

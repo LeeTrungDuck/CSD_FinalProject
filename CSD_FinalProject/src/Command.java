@@ -8,6 +8,6 @@
  * @author ltrun
  */
 public interface Command {
-    public void undo();
-    public void execute();
+    public void undo() throws UndoRedoException;
+    public void execute()throws UndoRedoException;
 }

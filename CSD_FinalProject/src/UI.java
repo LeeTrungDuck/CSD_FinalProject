@@ -39,7 +39,7 @@ public class UI {
                     if (undo.isEmpty()) { error("Nothing to undo!"); break; }
                     try {
                         engine.undo();
-                    } catch (IllegalArgumentException e) {
+                    } catch (UndoRedoException e) {
                         error("Error: " + e.getMessage());
                     }
                     break;
@@ -47,7 +47,7 @@ public class UI {
                     if (redo.isEmpty()) { error("Nothing to redo!"); break; }
                     try {
                         engine.redo();
-                    } catch (IllegalArgumentException e) {
+                    } catch (UndoRedoException e) {
                         error("Error: " + e.getMessage());
                     }
                     break;
@@ -68,7 +68,7 @@ public class UI {
             if (c != null) {
                 try {
                     engine.executeCommand(c);
-                } catch (IllegalArgumentException e) {
+                } catch (UndoRedoException e) {
                     error("Error: " + e.getMessage());
                 }
             }
@@ -81,7 +81,7 @@ public class UI {
         try {
             engine.saveFile();
             info("Saved to: " + fileHandle.getFilePath());
-        } catch (RuntimeException e) {
+        } catch (UndoRedoException e) {
             error("Save failed: " + e.getMessage());
         }
     }
@@ -92,7 +92,7 @@ public class UI {
             engine.loadFile();
             info("Loaded from: " + fileHandle.getFilePath()
                     + " (undo/redo history cleared)");
-        } catch (RuntimeException e) {
+        } catch (UndoRedoException e) {
             error("Load failed: " + e.getMessage());
         }
     }

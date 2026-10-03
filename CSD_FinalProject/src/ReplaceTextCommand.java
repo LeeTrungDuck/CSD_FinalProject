@@ -33,21 +33,21 @@ public class ReplaceTextCommand implements Command{
     public void setEditor(Editor editor) { this.editor = editor; }
 
     @Override
-    public void execute() {
+    public void execute() throws UndoRedoException {
         if (editor == null) {
-            throw new IllegalArgumentException("Editor is null!");
+            throw new UndoRedoException("Editor is null!");
         }
         if (position < 0 || end > editor.getContent().length() || position >= end) {
-            throw new IllegalArgumentException("Position out of bounds!");
+            throw new UndoRedoException("Position out of bounds!");
         }
         oldText = editor.getContent().substring(position, end);
         editor.replace(position, end, newText);
     }
 
     @Override
-    public void undo() {
-        if (editor == null) {
-            throw new IllegalArgumentException("Editor is null!");
+    public void undo() throws UndoRedoException {
+        if (editor == null || oldText == null || newText == null) {
+            throw new UndoRedoException("Editor or text is null!");
         }
         if (oldText != null) {
             editor.replace(position, position + newText.length(), oldText);

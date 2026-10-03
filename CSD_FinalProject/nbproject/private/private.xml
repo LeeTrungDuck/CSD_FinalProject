@@ -3,12 +3,21 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/Command.java</file>
             <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/Main.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/HistoryLimitManager.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/UI.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/UndoRedoException.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/DeleteTextCommand.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/SystemEngine.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/Command.java</file>
             <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/CustomStack.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/FileHandle.java</file>
             <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/Editor.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/UndoHistoryManager.java</file>
             <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/Node.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/RedoHistoryManager.java</file>
             <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/InsertTextCommand.java</file>
+            <file>file:/C:/FPT/learningProplem/CSD/LAB/Code/CSD_FinalProject/src/ReplaceTextCommand.java</file>
         </group>
     </open-files>
 </project-private>

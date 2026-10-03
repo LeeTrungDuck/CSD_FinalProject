@@ -52,27 +52,27 @@ public class DeleteTextCommand implements Command{
     }
 
     @Override
-    public void undo() {
+    public void undo() throws UndoRedoException {
         if (editor == null) {
-            throw new IllegalArgumentException("Editor is null!");
+            throw new UndoRedoException("Editor is null!");
         }
         if (text == null) {
-            throw new IllegalArgumentException("Nothing to undo, command has not been executed!");
+            throw new UndoRedoException("Nothing to undo, command has not been executed!");
         }
         editor.insert(position, text);
     }
 
     @Override
-    public void execute() {
+    public void execute() throws UndoRedoException {
         if (editor == null) {
-            throw new IllegalArgumentException("Editor is null!");
+            throw new UndoRedoException("Editor is null!");
         }
         int length = editor.getContent().length();
         if (position < 0 || end < 0 || position > length || end > length) {
-            throw new IllegalArgumentException("Position out of bounds!");
+            throw new UndoRedoException("Position out of bounds!");
         }
         if (position >= end) {
-            throw new IllegalArgumentException("Start must be less than end!");
+            throw new UndoRedoException("Start must be less than end!");
         }
 
         text = editor.getContent().substring(position, end);

@@ -7,7 +7,8 @@
  *
  * @author ltrun
  */
-public class InsertTextCommand implements Command{
+public class InsertTextCommand implements Command {
+
     private int position;
     private String text;
     private Editor editor;
@@ -17,20 +18,25 @@ public class InsertTextCommand implements Command{
         this.text = text;
         this.editor = editor;
     }
-    
-    
-    
+
     @Override
-    public void undo() { // doan nay co nem loi, nho bat loi, dung de hoan tac 1 thao tac them
-            editor.delete(position, position+text.length());
+    public void undo() throws UndoRedoException { // doan nay co nem loi, nho bat loi, dung de hoan tac 1 thao tac them
+        if (editor == null || text == null) {
+            throw new UndoRedoException("Editor Is Null!");
+        } else {
+            editor.delete(position, position + text.length());
+        }
+
     }
 
     @Override
-    public void execute() { //dung khi them 1 chuoi - co exeption nho bat
-        if(editor == null)
-            throw new IllegalArgumentException("Editor Is Null!");
-        editor.insert(position, text);
+    public void execute() throws UndoRedoException { //dung khi them 1 chuoi - co exeption nho bat
+        if (editor == null) {
+            throw new UndoRedoException("Editor Is Null!");
+        } else {
+            editor.insert(position, text);
+        }
 
     }
-    
+
 }
